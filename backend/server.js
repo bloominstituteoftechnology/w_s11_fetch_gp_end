@@ -27,16 +27,10 @@ let books = [
   },
   {
     id: getNextId(),
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
+    title: "The Vampire Lestat",
+    author: "Anne Rice",
     finished: true
   },
-  {
-    id: getNextId(),
-    title: "Moby Dick",
-    author: "Herman Melville",
-    finished: false
-  }
 ]
 
 server.get('/api/books', (_, res) => {

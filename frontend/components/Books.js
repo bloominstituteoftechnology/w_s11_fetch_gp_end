@@ -66,8 +66,10 @@ export default function Books() {
         {books.map(book => (
           <StyledBook key={book.id} $finished={book.finished}>
             {book.title} by {book.author}
-            <button onClick={() => handleEdit(book)}>Edit</button>
-            <button onClick={() => handleDelete(book.id)}>Delete</button>
+            <div>
+              <button onClick={() => handleEdit(book)}>Edit</button>
+              <button onClick={() => handleDelete(book.id)}>Delete</button>
+            </div>
           </StyledBook>
         ))}
       </ul>
