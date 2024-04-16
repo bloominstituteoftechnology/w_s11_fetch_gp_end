@@ -1,36 +1,37 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 const StyledBook = styled.li`
   text-decoration: ${props => props.$finished ? 'line-through' : 'initial'};
 `
 
+const getInitialForm = () => ({ title: '', author: '', finished: false })
+
 export default function Books() {
   const [books, setBooks] = useState([])
-  const [bookForm, setBookForm] = useState({ title: '', author: '', finished: false })
+  const [bookForm, setBookForm] = useState(getInitialForm)
   const [editingId, setEditingId] = useState(null)
-  const controllerRef = useRef(new AbortController)
 
   useEffect(() => {
     fetchBooks()
   }, [])
 
   const fetchBooks = () => {
-    fetch('/api/books', { signal: controllerRef.current.signal })
+    fetch('/api/books')
       .then(res => res.json())
       .then(data => setBooks(data))
       .catch(err => console.error('Failed to fetch books', err))
   }
 
-  const onChange = (event) => {
-    const { name, value, type, checked } = event.target
-    setBookForm({
-      ...bookForm,
-      [name]: type === 'checkbox' ? checked : value
-    })
+  const deleteBook = id => {
+    setEditingId(null)
+    setBookForm(getInitialForm())
+    fetch(`/api/books/${id}`, { method: 'DELETE' })
+      .then(() => fetchBooks())
+      .catch(err => console.error('Failed to delete the book', err))
   }
 
-  const handleSubmit = (event) => {
+  const onSubmit = (event) => {
     event.preventDefault()
     const url = editingId ? `/api/books/${editingId}` : '/api/books'
 
@@ -38,47 +39,42 @@ export default function Books() {
       method: editingId ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bookForm),
-      signal: controllerRef.current.signal,
     })
       .then(() => {
         fetchBooks()
         setEditingId(null)
-        setBookForm({ title: '', author: '', finished: false })
+        setBookForm(getInitialForm())
       })
       .catch(err => console.error('Failed to save the book', err))
   }
 
-  const handleEdit = book => {
+  const onChange = (event) => {
+    const { name, value, type, checked } = event.target
+    setBookForm({
+      ...bookForm, [name]: type === 'checkbox' ? checked : value
+    })
+  }
+
+  const editMode = book => {
     setEditingId(book.id)
     setBookForm(book)
   }
 
-  const handleDelete = id => {
-    setEditingId(null)
-    setBookForm({ title: '', author: '', finished: false })
-    fetch(`/api/books/${id}`, {
-      method: 'DELETE',
-      signal: controllerRef.current.signal,
-    })
-      .then(() => fetchBooks())
-      .catch(err => console.log('Failed to delete the book', err))
-  }
-
   return (
     <div>
-      <h2>Books Component</h2>
+      <h2>Books</h2>
       <ul>
         {books.map(book => (
           <StyledBook key={book.id} $finished={book.finished}>
             {book.title} by {book.author}
             <div>
-              <button onClick={() => handleEdit(book)}>Edit</button>
-              <button onClick={() => handleDelete(book.id)}>Delete</button>
+              <button onClick={() => editMode(book)}>Edit</button>
+              <button onClick={() => deleteBook(book.id)}>Delete</button>
             </div>
           </StyledBook>
         ))}
       </ul>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <input
           name="title"
           value={bookForm.title}
