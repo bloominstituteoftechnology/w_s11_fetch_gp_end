@@ -1,5 +1,5 @@
 {
-  "name": "react-project",
+  "name": "w_s11_fetch_gp",
   "version": "0.0.1",
   "scripts": {
     "dev": "fkill :9009 :3003 -f -s && concurrently \"npm:backend\" \"npm:frontend\"",
