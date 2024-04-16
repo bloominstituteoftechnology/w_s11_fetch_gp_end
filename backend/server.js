@@ -15,14 +15,14 @@ const getNextId = () => id++
 let books = [
   {
     id: getNextId(),
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
+    title: "Dune",
+    author: "Frank Herbert",
     finished: false
   },
   {
     id: getNextId(),
-    title: "1984",
-    author: "George Orwell",
+    title: "Hyperion",
+    author: "Dan Simmons",
     finished: true
   },
   {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 const StyledBook = styled.li`
-  text-decoration: ${props => props.$finished ? 'line-through' : 'initial'};
+  text-decoration: ${props => props.$finished ? 'line-through' : 'initial'}
 `
 
 const initialForm = { title: '', author: '', finished: false }
@@ -17,8 +17,18 @@ export default function Books() {
 
   const fetchBooks = () => {
     fetch('/api/books')
-      .then(res => res.json())
-      .then(data => setBooks(data))
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok')
+        }
+        const contentType = res.headers.get('Content-Type')
+        if (contentType.includes('application/json')) {
+          return res.json()
+        }
+      })
+      .then(data => {
+        setBooks(data)
+      })
       .catch(err => console.error('Failed to fetch books', err))
   }
 
@@ -35,7 +45,10 @@ export default function Books() {
 
     fetch(url, {
       method: bookForm.id ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        'X-Bloom': 'full-stack-web',
+      }),
       body: JSON.stringify(bookForm),
     })
       .then(() => {
@@ -54,7 +67,7 @@ export default function Books() {
 
   return (
     <div>
-      <h2>My Fav Books</h2>
+      <h2>My Books</h2>
       <ul>
         {books.map(book => (
           <StyledBook key={book.id} $finished={book.finished}>
