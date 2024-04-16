@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 
 const StyledBook = styled.li`
@@ -9,19 +9,20 @@ export default function Books() {
   const [books, setBooks] = useState([])
   const [bookForm, setBookForm] = useState({ title: '', author: '', finished: false })
   const [editingId, setEditingId] = useState(null)
+  const controllerRef = useRef(new AbortController)
 
   useEffect(() => {
     fetchBooks()
   }, [])
 
   const fetchBooks = () => {
-    fetch('/api/books')
+    fetch('/api/books', { signal: controllerRef.current.signal })
       .then(res => res.json())
       .then(data => setBooks(data))
       .catch(err => console.error('Failed to fetch books', err))
   }
 
-  const handleFormChange = (event) => {
+  const onChange = (event) => {
     const { name, value, type, checked } = event.target
     setBookForm({
       ...bookForm,
@@ -32,12 +33,12 @@ export default function Books() {
   const handleSubmit = (event) => {
     event.preventDefault()
     const url = editingId ? `/api/books/${editingId}` : '/api/books'
-    const method = editingId ? 'PUT' : 'POST'
 
     fetch(url, {
-      method,
+      method: editingId ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bookForm)
+      body: JSON.stringify(bookForm),
+      signal: controllerRef.current.signal,
     })
       .then(() => {
         fetchBooks()
@@ -55,8 +56,12 @@ export default function Books() {
   const handleDelete = id => {
     setEditingId(null)
     setBookForm({ title: '', author: '', finished: false })
-    fetch(`/api/books/${id}`, { method: 'DELETE' })
+    fetch(`/api/books/${id}`, {
+      method: 'DELETE',
+      signal: controllerRef.current.signal,
+    })
       .then(() => fetchBooks())
+      .catch(err => console.log('Failed to delete the book', err))
   }
 
   return (
@@ -77,13 +82,13 @@ export default function Books() {
         <input
           name="title"
           value={bookForm.title}
-          onChange={handleFormChange}
+          onChange={onChange}
           placeholder="Title"
         />
         <input
           name="author"
           value={bookForm.author}
-          onChange={handleFormChange}
+          onChange={onChange}
           placeholder="Author"
         />
         <label>
@@ -92,7 +97,7 @@ export default function Books() {
             type="checkbox"
             name="finished"
             checked={bookForm.finished}
-            onChange={handleFormChange}
+            onChange={onChange}
           />
         </label>
         <button type="submit">{editingId ? 'Update Book' : 'Add Book'}</button>
