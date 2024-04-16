@@ -5,12 +5,11 @@ const StyledBook = styled.li`
   text-decoration: ${props => props.$finished ? 'line-through' : 'initial'};
 `
 
-const getInitialForm = () => ({ title: '', author: '', finished: false })
+const initialForm = { title: '', author: '', finished: false }
 
 export default function Books() {
   const [books, setBooks] = useState([])
-  const [bookForm, setBookForm] = useState(getInitialForm)
-  const [editingId, setEditingId] = useState(null)
+  const [bookForm, setBookForm] = useState(initialForm)
 
   useEffect(() => {
     fetchBooks()
@@ -24,8 +23,7 @@ export default function Books() {
   }
 
   const deleteBook = id => {
-    setEditingId(null)
-    setBookForm(getInitialForm())
+    setBookForm(initialForm)
     fetch(`/api/books/${id}`, { method: 'DELETE' })
       .then(() => fetchBooks())
       .catch(err => console.error('Failed to delete the book', err))
@@ -33,17 +31,16 @@ export default function Books() {
 
   const onSubmit = (event) => {
     event.preventDefault()
-    const url = editingId ? `/api/books/${editingId}` : '/api/books'
+    const url = bookForm.id ? `/api/books/${bookForm.id}` : '/api/books'
 
     fetch(url, {
-      method: editingId ? 'PUT' : 'POST',
+      method: bookForm.id ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bookForm),
     })
       .then(() => {
         fetchBooks()
-        setEditingId(null)
-        setBookForm(getInitialForm())
+        setBookForm(initialForm)
       })
       .catch(err => console.error('Failed to save the book', err))
   }
@@ -55,20 +52,15 @@ export default function Books() {
     })
   }
 
-  const editMode = book => {
-    setEditingId(book.id)
-    setBookForm(book)
-  }
-
   return (
     <div>
-      <h2>Books</h2>
+      <h2>My Fav Books</h2>
       <ul>
         {books.map(book => (
           <StyledBook key={book.id} $finished={book.finished}>
             {book.title} by {book.author}
             <div>
-              <button onClick={() => editMode(book)}>Edit</button>
+              <button onClick={() => setBookForm(book)}>Edit</button>
               <button onClick={() => deleteBook(book.id)}>Delete</button>
             </div>
           </StyledBook>
@@ -96,7 +88,7 @@ export default function Books() {
             onChange={onChange}
           />
         </label>
-        <button type="submit">{editingId ? 'Update Book' : 'Add Book'}</button>
+        <button type="submit">{bookForm.id ? 'Update Book' : 'Add Book'}</button>
       </form>
     </div>
   )

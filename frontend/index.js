@@ -11,11 +11,10 @@ const root = createRoot(domNode)
 root.render(
   <BrowserRouter>
     <nav>
-      <Link to="/">Books</Link> <Link to="about">About</Link>
+      <Link to="/">Books</Link>
     </nav>
     <Routes>
       <Route path="/" element={<Books />} />
-      <Route path="about" element={<h2>About</h2>} />
     </Routes>
   </BrowserRouter>
 )
